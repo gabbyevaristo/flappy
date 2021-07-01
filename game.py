@@ -4,9 +4,13 @@ import canvas
 import background
 import player
 import os
+import sys
 
 pygame.init()
 
+x, y = 140, 355
+is_jump = False
+jump_count = 10
 
 class Game:
 
@@ -17,8 +21,6 @@ class Game:
         self.background = background.Background()
         self.player1 = player.Player()
         self.index = 0
-        # self.objects = []
-        # self.append_objects()
 
     def run_game(self):
         clock = pygame.time.Clock()
@@ -30,24 +32,24 @@ class Game:
 
             if self.check_events() == False:
                 run = False
+                pygame.quit()
+                sys.exit()
+
             self.background.move_background(1.4)
             self.screen.draw_background(self.background.get_background(), self.background.get_background_x1(), self.background.get_background_x2())
-            # self.screen.draw_objects(self.objects)
 
-            self.screen.draw(self.player1.get_player_sprites()[self.index], (20,20))
+            cur_player = self.player1.get_player_sprites()[self.index]
+            self.screen.draw(cur_player, (x,y))
 
             self.screen.update_screen()
 
-        pygame.quit()
-
 
     def check_events(self):
+        global x,y,is_jump,jump_count
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return False
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    self.index = (self.index + 1) % len(self.player1.get_player_sprites())
 
-    # def append_objects(self):
-    #     self.objects.append(self.player1)
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_SPACE]:
+                self.index = (self.index + 1) % len(self.player1.get_player_sprites())
