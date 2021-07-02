@@ -37,3 +37,6 @@ class Pipes:
     def move_pipes(self, speed):
         for pipe in self.pipes:
             pipe.centerx -= speed
+
+    def clear_pipes(self):
+        self.pipes.clear()

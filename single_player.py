@@ -21,12 +21,10 @@ OUT_OF_BOUNDS_EVENT = pygame.USEREVENT + 2
 
 # logo = image_loader.ImageLoader.load_image('logo.png')
 
-class Game:
+class SinglePlayer:
 
-    def __init__(self):
-        self.width = constants.SCREEN_WIDTH
-        self.height = constants.SCREEN_HEIGHT
-        self.screen = canvas.Canvas(self.width, self.height)
+    def __init__(self, screen):
+        self.screen = screen
         self.landscape = landscape.Landscape()
         self.player1 = player.Player(constants.JUMP_VELOCITY)
         self.pipes = pipes.Pipes()

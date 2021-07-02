@@ -8,4 +8,4 @@ class ImageLoader:
 
     @staticmethod
     def load_image(filename=''):
-        return pygame.image.load(os.path.join(IMG_DIR, filename)).convert()
+        return pygame.image.load(os.path.join(IMG_DIR, filename)).convert_alpha()
