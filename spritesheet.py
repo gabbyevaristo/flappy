@@ -19,8 +19,9 @@ class SpriteSheet:
         sprites = []
         for i in range(1, self.sheet_length + 1):
             filename = f'{self.filename}_{i}.png'
-            sprite = self.create_sprite(filename, i)
-            sprites.append(sprite)
+            sprite_surface = self.create_sprite(filename, i)
+            sprite_rect = sprite_surface.get_rect(center=(140,355))
+            sprites.append((sprite_surface, sprite_rect))
         return sprites
 
     def create_sprite(self, filename, i):

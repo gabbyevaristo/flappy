@@ -14,14 +14,10 @@ class Canvas:
         pygame.display.set_caption(name)
 
     def update_screen(self):
-        pygame.display.update()
+        pygame.display.flip()
 
     def get_screen(self):
         return self.screen
-
-    def draw_background(self, background, x1, x2):
-        self.screen.blit(background, (x1, 0))
-        self.screen.blit(background, (x2, 0))
 
     def draw(self, obj, pos):
         self.screen.blit(obj, pos)

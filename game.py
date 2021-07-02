@@ -1,16 +1,24 @@
 import pygame
 import constants
 import canvas
-import background
+import landscape
 import player
+import pipes
 import os
 import sys
 
 pygame.init()
 
-x, y = 140, 355
-is_jump = False
-jump_count = 10
+# event_index = 0
+
+# event triggered by timer
+SPAWN_PIPE_EVENT = pygame.USEREVENT
+pygame.time.set_timer(SPAWN_PIPE_EVENT, 1600)
+
+COLLIDE_EVENT = pygame.USEREVENT + 1
+OUT_OF_BOUNDS_EVENT = pygame.USEREVENT + 2
+
+
 
 class Game:
 
@@ -18,38 +26,88 @@ class Game:
         self.width = constants.SCREEN_WIDTH
         self.height = constants.SCREEN_HEIGHT
         self.screen = canvas.Canvas(self.width, self.height)
-        self.background = background.Background()
-        self.player1 = player.Player()
-        self.index = 0
+        self.landscape = landscape.Landscape()
+        self.player1 = player.Player(constants.JUMP_VELOCITY)
+        self.pipes = pipes.Pipes()
+        self.game_speed = constants.INIT_GAME_SPEED
+        self.game_active = True
 
     def run_game(self):
         clock = pygame.time.Clock()
-        speed = 60
         run = True
 
         while run:
-            clock.tick(speed)
+            self.check_collision()
+            self.check_in_bounds()
+            self.check_events()
+            self.move_objects()
+            self.draw_objects()
+            self.screen.update_screen()
 
-            if self.check_events() == False:
-                run = False
+            clock.tick(constants.FPS)
+
+    def draw_objects(self):
+        # Background
+        background = self.landscape.get_background()
+        self.screen.draw(background, (0, 0))
+
+        # Pipes
+        for pipe in self.pipes.get_pipes():
+            pipe_surface = self.pipes.get_pipe(pipe)
+            self.screen.draw(pipe_surface, pipe)
+
+        # Player
+        player_surface, player_rect = self.player1.get_player()
+        self.screen.draw(player_surface, player_rect)
+
+        # Foreground
+        foreground, foreground_x = self.landscape.get_foreground(), self.landscape.get_foreground_x()
+        self.screen.draw(foreground, (foreground_x, constants.FLOOR_HEIGHT))
+        self.screen.draw(foreground, (foreground_x + self.landscape.get_foreground_width(), constants.FLOOR_HEIGHT))
+
+    def move_objects(self):
+        if self.game_active:
+            # Player
+            self.player1.move_player(constants.GRAVITY)
+
+            # Pipes
+            self.pipes.move_pipes(self.game_speed)
+
+            # Foreground
+            self.landscape.move_foreground(self.game_speed)
+        else:
+            # Player fall
+            _, player_rect = self.player1.get_player()
+            if player_rect.bottom <= constants.FLOOR_HEIGHT:
+                self.player1.fall()
+
+    def check_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-            self.background.move_background(1.4)
-            self.screen.draw_background(self.background.get_background(), self.background.get_background_x1(), self.background.get_background_x2())
+            if event.type == SPAWN_PIPE_EVENT:
+                self.pipes.add_pipe()
 
-            cur_player = self.player1.get_player_sprites()[self.index]
-            self.screen.draw(cur_player, (x,y))
+            if event.type == COLLIDE_EVENT:
+                self.game_active = False
 
-            self.screen.update_screen()
-
-
-    def check_events(self):
-        global x,y,is_jump,jump_count
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                return False
+            if event.type == OUT_OF_BOUNDS_EVENT:
+                self.game_active = False
 
             keys = pygame.key.get_pressed()
             if keys[pygame.K_SPACE]:
-                self.index = (self.index + 1) % len(self.player1.get_player_sprites())
+                self.player1.on_tap()
+
+    def check_collision(self):
+        for pipe in self.pipes.get_pipes():
+            _, player_rect = self.player1.get_player()
+            if player_rect.colliderect(pipe):
+                pygame.event.post(pygame.event.Event(COLLIDE_EVENT))
+
+    def check_in_bounds(self):
+        _, player_rect = self.player1.get_player()
+        if player_rect.bottom >= 660:
+            pygame.event.post(pygame.event.Event(OUT_OF_BOUNDS_EVENT))
+
