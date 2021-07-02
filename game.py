@@ -26,7 +26,6 @@ class Game:
     def run_game(self):
         clock = pygame.time.Clock()
         run = True
-
         while run:
             self.check_events()
             if self.mode == 'single':

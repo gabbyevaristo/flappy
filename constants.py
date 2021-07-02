@@ -8,3 +8,4 @@ FPS = 90
 INIT_GAME_SPEED = 3 # 3 to 5
 JUMP_VELOCITY = 7
 FLOOR_HEIGHT = 660
+FONT_FILE = 'arcade-font.ttf'

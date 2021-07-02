@@ -31,7 +31,7 @@ class Pipes:
     def create_pipe(self):
         height = random.choice(self.pipe_heights)
         pipe_bottom = self.pipe_bottom.get_rect(midtop=(550, height))
-        pipe_top = self.pipe_top.get_rect(midbottom=(550, height - 150))
+        pipe_top = self.pipe_top.get_rect(midbottom=(550, height - 200))
         return pipe_bottom, pipe_top
 
     def move_pipes(self, speed):
@@ -40,3 +40,6 @@ class Pipes:
 
     def clear_pipes(self):
         self.pipes.clear()
+
+    def get_pipe_width(self):
+        return self.pipe_bottom.get_width()

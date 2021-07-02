@@ -4,6 +4,8 @@ import canvas
 import landscape
 import bird
 import pipes
+import score
+import text
 import os
 import sys
 import image_loader
@@ -25,7 +27,14 @@ SPAWN_PIPE_EVENT = pygame.USEREVENT
 pygame.time.set_timer(SPAWN_PIPE_EVENT, 1400)
 
 COLLIDE_EVENT = pygame.USEREVENT + 1
+
 OUT_OF_BOUNDS_EVENT = pygame.USEREVENT + 2
+
+BIRD_FLAP_EVENT = pygame.USEREVENT + 3
+pygame.time.set_timer(BIRD_FLAP_EVENT, 150)
+
+PASSED_EVENT = pygame.USEREVENT + 4
+
 
 
 class SinglePlayer:
@@ -45,6 +54,7 @@ class SinglePlayer:
         self.game_over = image_loader.ImageLoader.load_image('game-over.png')
         self.game_over = pygame.transform.scale(self.game_over, (385,120))
         self.clock = clock
+        self.score = score.Score()
         self.run_game()
 
     def run_game(self):
@@ -52,6 +62,7 @@ class SinglePlayer:
         while self.run:
             self.check_collision()
             self.check_in_bounds()
+            self.check_passed()
             self.check_events()
             self.move_objects()
             self.draw_objects()
@@ -79,6 +90,10 @@ class SinglePlayer:
 
         if self.show_start:
             self.screen.draw(self.start, (55,150))
+
+        if self.game_active:
+            score_surface, score_rect = self.score.get_score_surface(), self.score.get_score_rect()
+            self.screen.draw(score_surface, score_rect)
 
         if self.is_game_over:
             self.screen.draw(self.game_over, (55,150))
@@ -119,6 +134,12 @@ class SinglePlayer:
                 self.is_game_over = True
                 self.game_active = False
 
+            if event.type == BIRD_FLAP_EVENT and self.game_active:
+                self.player.change_bird_frame()
+
+            if event.type == PASSED_EVENT and self.game_active:
+                self.score.update_current_score()
+
             keys = pygame.key.get_pressed()
             if keys[pygame.K_SPACE] and not self.is_game_over:
                 self.game_active = True
@@ -143,6 +164,12 @@ class SinglePlayer:
         bird_rect = self.player.get_bird_rect()
         if bird_rect.bottom >= 660:
             pygame.event.post(pygame.event.Event(OUT_OF_BOUNDS_EVENT))
+
+    def check_passed(self):
+        for pipe in self.pipes.get_pipes():
+            bird_rect = self.player.get_bird_rect()
+            if bird_rect.left - self.pipes.get_pipe_width() <= pipe.right <= bird_rect.left:
+                pygame.event.post(pygame.event.Event(PASSED_EVENT))
 
     def reset_game(self):
         self.show_start = True
