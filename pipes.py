@@ -6,40 +6,44 @@ import random
 
 PIPE_FILE = 'pipe-green.png'
 
-class Pipes:
+class TopPipe:
 
-    def __init__(self):
+    def __init__(self, height):
+        self.pipe_top = image_loader.ImageLoader.load_image(PIPE_FILE)
+        self.pipe_top = pygame.transform.scale(self.pipe_top, (self.pipe_top.get_width() + 20, self.pipe_top.get_height() * 2))
+        self.pipe_top = pygame.transform.rotate(self.pipe_top, 180)
+        self.pipe_top_rect = self.pipe_top.get_rect(midbottom=(550, height))
+        self.has_passed = False
+
+    def get_pipe_surface(self):
+        return self.pipe_top
+
+    def get_pipe_rect(self):
+        return self.pipe_top_rect
+
+    def is_pipe_passed(self):
+        return self.has_passed
+
+    def set_pass_true(self):
+        self.has_passed = True
+
+
+class BottomPipe:
+
+    def __init__(self, height):
         self.pipe_bottom = image_loader.ImageLoader.load_image(PIPE_FILE)
         self.pipe_bottom = pygame.transform.scale(self.pipe_bottom, (self.pipe_bottom.get_width() + 20, self.pipe_bottom.get_height() * 2))
-        self.pipe_top = pygame.transform.rotate(self.pipe_bottom, 180)
-        self.pipes = []
-        self.pipe_heights = [x for x in range(250,600,10)]
+        self.pipe_bottom_rect = self.pipe_bottom.get_rect(midtop=(550, height))
+        self.has_passed = False
 
-    def get_pipe(self, pipe):
-        if pipe.bottom >= 750:
-            return self.pipe_bottom
-        else:
-            return self.pipe_top
+    def get_pipe_surface(self):
+        return self.pipe_bottom
 
-    def get_pipes(self):
-        return self.pipes
+    def get_pipe_rect(self):
+        return self.pipe_bottom_rect
 
-    def add_pipe(self):
-        pipe = self.create_pipe()
-        self.pipes.extend(pipe)
+    def is_pipe_passed(self):
+        return self.has_passed
 
-    def create_pipe(self):
-        height = random.choice(self.pipe_heights)
-        pipe_bottom = self.pipe_bottom.get_rect(midtop=(550, height))
-        pipe_top = self.pipe_top.get_rect(midbottom=(550, height - 200))
-        return pipe_bottom, pipe_top
-
-    def move_pipes(self, speed):
-        for pipe in self.pipes:
-            pipe.centerx -= speed
-
-    def clear_pipes(self):
-        self.pipes.clear()
-
-    def get_pipe_width(self):
-        return self.pipe_bottom.get_width()
+    def set_pass_true(self):
+        self.has_passed = True
