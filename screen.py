@@ -1,13 +1,9 @@
 import pygame
-import os
 
-"""
-Responsible for the screen and drawing
 
-"""
-class Canvas:
+class Screen:
 
-    def __init__(self, width, height, name='Flappy'):
+    def __init__(self, width, height, name='Flappy Bird'):
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
@@ -18,6 +14,3 @@ class Canvas:
 
     def get_screen(self):
         return self.screen
-
-    def draw(self, obj, pos):
-        self.screen.blit(obj, pos)

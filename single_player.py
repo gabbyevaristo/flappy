@@ -1,60 +1,45 @@
 import pygame
 import constants
-import canvas
 import landscape
 import bird
 import pipe_manager
 import score
-import text
-import os
+import single_player_assets
 import sys
-import image_loader
-import time
-import random
 
 
 # on home screen, up to go to single player -> replace w button
 # on single player, up to restart           -> replace w button
 # on single player, left to go back to home page -> replace w button
 
-
-
 pygame.init()
 
-# event_index = 0
-
-# event triggered by timer
 SPAWN_PIPE_EVENT = pygame.USEREVENT
-pygame.time.set_timer(SPAWN_PIPE_EVENT, 1400)
-
 COLLIDE_EVENT = pygame.USEREVENT + 1
-
 OUT_OF_BOUNDS_EVENT = pygame.USEREVENT + 2
-
 BIRD_FLAP_EVENT = pygame.USEREVENT + 3
-pygame.time.set_timer(BIRD_FLAP_EVENT, 150)
-
 PASSED_EVENT = pygame.USEREVENT + 4
+
+pygame.time.set_timer(SPAWN_PIPE_EVENT, 1400)
+pygame.time.set_timer(BIRD_FLAP_EVENT, 150)
 
 
 class SinglePlayer:
 
     def __init__(self, screen, landscape, clock):
         self.screen = screen
+        self.clock = clock
         self.landscape = landscape
-        self.player = bird.Bird(constants.JUMP_VELOCITY)
+        self.player = bird.Bird()
         self.pipe_manager = pipe_manager.PipeManager()
         self.game_speed = constants.INIT_GAME_SPEED
-        self.game_active = False
+        self.start = single_player_assets.StartText()
+        self.game_over = single_player_assets.GameOverText()
+        self.score = score.Score()
         self.show_start = True
+        self.is_game_active = False
         self.is_game_over = False
         self.run = True
-        self.start = image_loader.ImageLoader.load_image('press-to-start.png')
-        self.start = pygame.transform.scale(self.start, (385,95))
-        self.game_over = image_loader.ImageLoader.load_image('game-over.png')
-        self.game_over = pygame.transform.scale(self.game_over, (385,120))
-        self.clock = clock
-        self.score = score.Score()
         self.run_game()
 
     def run_game(self):
@@ -69,79 +54,34 @@ class SinglePlayer:
 
             self.clock.tick(constants.FPS)
 
-    def draw_objects(self):
-        # Background
-        background = self.landscape.get_background()
-        self.screen.draw(background, (0, 0))
-
-        # Pipes
-        for pipe in self.pipe_manager.get_pipes():
-            pipe_surface, pipe_rect = pipe.get_pipe_surface(), pipe.get_pipe_rect()
-            self.screen.draw(pipe_surface, pipe_rect)
-
-        # Bird
-        self.screen.draw(self.player.rotate_bird(), self.player.get_bird_rect())
-
-        # Foreground
-        foreground, foreground_x = self.landscape.get_foreground(), self.landscape.get_foreground_x()
-        self.screen.draw(foreground, (foreground_x, constants.FLOOR_HEIGHT))
-        self.screen.draw(foreground, (foreground_x + self.landscape.get_foreground_width(), constants.FLOOR_HEIGHT))
-
-        if self.show_start:
-            self.screen.draw(self.start, (55,150))
-
-        if self.game_active:
-            score_surface, score_rect = self.score.get_score_surface(), self.score.get_score_rect()
-            self.screen.draw(score_surface, score_rect)
-
-        if self.is_game_over:
-            self.screen.draw(self.game_over, (55,150))
-
-
-    def move_objects(self):
-        if self.game_active:
-            # Player
-            self.player.move_bird(constants.GRAVITY)
-
-            # Pipes
-            self.pipe_manager.move_pipes(self.game_speed)
-
-            # Foreground
-            self.landscape.move_foreground(self.game_speed)
-
-        if self.is_game_over:
-            # Player fall
-            bird_rect = self.player.get_bird_rect()
-            if bird_rect.bottom < constants.FLOOR_HEIGHT:
-                self.player.fall()
-
-
     def check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-            if event.type == SPAWN_PIPE_EVENT and self.game_active:
-                self.pipe_manager.add_pipe()
+            if self.is_game_active:
+                if event.type == SPAWN_PIPE_EVENT:
+                    self.pipe_manager.add_pipe()
 
-            if event.type == COLLIDE_EVENT:
-                self.is_game_over = True
-                self.game_active = False
+                if event.type == COLLIDE_EVENT:
+                    self.is_game_over = True
+                    self.is_game_active = False
 
-            if event.type == OUT_OF_BOUNDS_EVENT:
-                self.is_game_over = True
-                self.game_active = False
+                if event.type == OUT_OF_BOUNDS_EVENT:
+                    self.is_game_over = True
+                    self.is_game_active = False
 
-            if event.type == BIRD_FLAP_EVENT and self.game_active:
-                self.player.change_bird_frame()
+                if event.type == BIRD_FLAP_EVENT:
+                    self.player.change_bird_frame()
 
-            if event.type == PASSED_EVENT and self.game_active:
-                self.score.update_current_score()
+                if event.type == PASSED_EVENT:
+                    self.score.update_score()
 
             keys = pygame.key.get_pressed()
+
             if keys[pygame.K_SPACE] and not self.is_game_over:
-                self.game_active = True
+                self.is_game_active = True
                 self.show_start = False
                 self.player.on_tap()
 
@@ -150,29 +90,57 @@ class SinglePlayer:
                 self.reset_game()
 
             # go back to home page
-            if keys[pygame.K_LEFT] and not self.game_active:
+            if keys[pygame.K_LEFT] and not self.is_game_active:
                 self.run = False
 
+    def draw_objects(self):
+        screen = self.screen.get_screen()
+
+        self.landscape.draw_background(screen)
+        self.landscape.draw_foreground(screen)
+        self.pipe_manager.draw_pipes(screen)
+        self.player.draw_bird(screen)
+
+        if self.show_start:
+            self.start.draw_start(screen)
+
+        if self.is_game_active:
+            self.score.draw_current_score(screen)
+
+        if self.is_game_over:
+            self.game_over.draw_game_over(screen)
+            self.score.draw_final_score(screen)
+
+    def move_objects(self):
+        if self.is_game_active:
+            self.landscape.move_foreground(self.game_speed)
+            self.pipe_manager.move_pipes(self.game_speed)
+            self.player.move_bird()
+
+        if self.is_game_over:
+            self.player.fall()
+
     def check_collision(self):
-        for pipe in self.pipe_manager.get_pipes():
-            bird_rect = self.player.get_bird_rect()
+        bird_rect = self.player.get_bird_rect()
+        for pipe in self.pipe_manager.get_individual_pipes():
             pipe_rect = pipe.get_pipe_rect()
             if bird_rect.colliderect(pipe_rect):
                 pygame.event.post(pygame.event.Event(COLLIDE_EVENT))
 
     def check_in_bounds(self):
         bird_rect = self.player.get_bird_rect()
-        if bird_rect.bottom >= 660:
+        if bird_rect.bottom >= constants.FLOOR_HEIGHT:
             pygame.event.post(pygame.event.Event(OUT_OF_BOUNDS_EVENT))
 
     def check_passed(self):
-        pipes = self.pipe_manager.get_pipes()
-        for i in range(0, len(pipes), 2):
-            pipe = pipes[i]
-            bird_rect = self.player.get_bird_rect()
-            pipe_rect = pipe.get_pipe_rect()
-            if pipe_rect.right <= bird_rect.left and not pipe.is_pipe_passed():
-                pipe.set_pass_true()
+        bird_rect = self.player.get_bird_rect()
+
+        for bottom_pipe, top_pipe in self.pipe_manager.get_pipes():
+            pipe_rect = bottom_pipe.get_pipe_rect()
+            # Only need to check one pipe since top and bottom pipes have the same right position
+            if pipe_rect.right <= bird_rect.left and not bottom_pipe.is_pipe_passed():
+                bottom_pipe.set_passed_true()
+                top_pipe.set_passed_true()
                 pygame.event.post(pygame.event.Event(PASSED_EVENT))
 
     def reset_game(self):
@@ -181,3 +149,4 @@ class SinglePlayer:
         self.run = True
         self.pipe_manager.clear_pipes()
         self.player.reset_bird()
+        self.score.reset_score()

@@ -1,15 +1,16 @@
 import pygame
+import constants
 import image_loader
 
 
 RED_DOWNFLAP_FILE = 'redbird-downflap.png'
 RED_MIDFLAP_FILE = 'redbird-midflap.png'
 RED_UPFLAP_FILE = 'redbird-upflap.png'
-
+FALL_RATE = 4
 
 class Bird:
 
-    def __init__(self, jump_velocity):
+    def __init__(self):
         self.bird_downflap = image_loader.ImageLoader.load_image(RED_DOWNFLAP_FILE)
         self.bird_downflap = pygame.transform.scale(self.bird_downflap, (self.bird_downflap.get_width() + 10, self.bird_downflap.get_height() + 5))
         self.bird_midflap = image_loader.ImageLoader.load_image(RED_MIDFLAP_FILE)
@@ -19,18 +20,15 @@ class Bird:
         self.bird_frames = [self.bird_downflap, self.bird_midflap, self.bird_upflap]
         self.bird_index = 0
         self.bird_surface = self.bird_frames[self.bird_index]
-        self.bird_rect = self.bird_surface.get_rect(center=(180,355))
-        self.jump_velocity = jump_velocity
+        self.bird_center = (180,355)
+        self.bird_rect = self.bird_surface.get_rect(center=self.bird_center)
         self.y = 0
-
-    def get_bird_surface(self):
-        return self.bird_surface
 
     def get_bird_rect(self):
         return self.bird_rect
 
-    def move_bird(self, gravity):
-        self.y += gravity
+    def move_bird(self):
+        self.y += constants.GRAVITY
         self.bird_rect.centery += self.y
         if self.bird_rect.top <= 0:
             self.bird_rect.top = 0
@@ -38,13 +36,14 @@ class Bird:
 
     def on_tap(self):
         self.y = 0
-        self.y -= self.jump_velocity
+        self.y -= constants.JUMP_VELOCITY
 
     def fall(self):
-        self.bird_rect.centery += 5
+        if self.bird_rect.bottom < constants.FLOOR_HEIGHT:
+            self.bird_rect.centery += FALL_RATE
 
     def reset_bird(self):
-        self.bird_rect.center = (180,355)
+        self.bird_rect.center = self.bird_center
         self.y = 0
 
     def rotate_bird(self):
@@ -57,4 +56,7 @@ class Bird:
             self.bird_index = 0
 
         self.bird_surface = self.bird_frames[self.bird_index]
-        self.bird_rect = self.bird_surface.get_rect(center=(180, self.bird_rect.centery))
+        self.bird_rect = self.bird_surface.get_rect(center=(self.bird_center[0], self.bird_rect.centery))
+
+    def draw_bird(self, screen):
+        screen.blit(self.rotate_bird(), self.bird_rect)
