@@ -2,12 +2,15 @@ import pygame
 import constants
 import os
 
+
 FONT_DIR = 'fonts'
 
 class TextCreator:
 
-    def __init__(self, size, text, color, position):
-        self.font = pygame.font.Font(os.path.join(FONT_DIR, constants.FONT_FILE), size)
+    def __init__(self, size: int, text, color, position):
+        self.font = pygame.font.Font(
+            os.path.join(FONT_DIR, constants.FONT_FILE),
+            size)
         self.font_surface = self.font.render(text, True, color)
         self.font_rect = self.font_surface.get_rect(center=position)
         self.position = position

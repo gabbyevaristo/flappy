@@ -1,10 +1,11 @@
 import pygame
 import constants
-import screen
-import landscape
-import sys
-import single_player
 import game_assets
+import screen, landscape
+import single_player_mode
+import sys
+from enum import Enum
+
 
 pygame.init()
 
@@ -17,6 +18,8 @@ class Game:
         self.screen = screen.Screen(self.width, self.height)
         self.landscape = landscape.Landscape()
         self.logo = game_assets.Logo()
+        self.one_player_button = game_assets.OnePlayerButton()
+        self.multi_player_button = game_assets.MultiPlayerButton()
         self.mode = None
 
     def run_game(self):
@@ -26,8 +29,8 @@ class Game:
         while run:
             self.check_events()
 
-            if self.mode == 'SINGLE':
-                single_player.SinglePlayer(self.screen, self.landscape, clock)
+            if self.mode == GameModes.SINGLE:
+                single_player_mode.SinglePlayer(self.screen, self.landscape, clock)
                 self.clear_mode()
 
             self.draw_objects()
@@ -41,9 +44,23 @@ class Game:
                 pygame.quit()
                 sys.exit()
 
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_UP]:
-                self.mode = 'SINGLE'
+            mouse_position = pygame.mouse.get_pos()
+
+            if event.type == pygame.MOUSEMOTION:
+                if self.one_player_button.is_mouse_over(mouse_position):
+                    self.one_player_button.hover()
+                else:
+                    self.one_player_button.unhover()
+                if self.multi_player_button.is_mouse_over(mouse_position):
+                    self.multi_player_button.hover()
+                else:
+                    self.multi_player_button.unhover()
+
+            if event.type == pygame.MOUSEBUTTONDOWN and self.one_player_button.is_mouse_over(mouse_position):
+                self.mode = GameModes.SINGLE
+
+            if event.type == pygame.MOUSEBUTTONDOWN and self.multi_player_button.is_mouse_over(mouse_position):
+                pass
 
     def draw_objects(self):
         screen = self.screen.get_screen()
@@ -51,6 +68,15 @@ class Game:
         self.landscape.draw_background(screen)
         self.landscape.draw_foreground(screen)
         self.logo.draw_logo(screen)
+        self.one_player_button.draw_one_player_button(screen)
+        self.multi_player_button.draw_multi_player_button(screen)
 
     def clear_mode(self):
         self.mode = None
+
+
+
+
+class GameModes(Enum):
+    SINGLE = 1
+    MULTI = 2

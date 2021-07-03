@@ -4,13 +4,11 @@ import landscape
 import bird
 import pipe_manager
 import score
+import sound_loader
+import sound_names
 import single_player_assets
 import sys
 
-
-# on home screen, up to go to single player -> replace w button
-# on single player, up to restart           -> replace w button
-# on single player, left to go back to home page -> replace w button
 
 pygame.init()
 
@@ -32,10 +30,13 @@ class SinglePlayer:
         self.landscape = landscape
         self.player = bird.Bird()
         self.pipe_manager = pipe_manager.PipeManager()
-        self.game_speed = constants.INIT_GAME_SPEED
         self.start = single_player_assets.StartText()
         self.game_over = single_player_assets.GameOverText()
+        self.restart_button = single_player_assets.RestartButton()
+        self.back_to_home_button = single_player_assets.BackToHomeButton()
         self.score = score.Score()
+        self.sounds = sound_loader.SoundLoader()
+        self.game_speed = constants.INIT_GAME_SPEED
         self.show_start = True
         self.is_game_active = False
         self.is_game_over = False
@@ -64,19 +65,17 @@ class SinglePlayer:
                 if event.type == SPAWN_PIPE_EVENT:
                     self.pipe_manager.add_pipe()
 
-                if event.type == COLLIDE_EVENT:
+                if event.type == COLLIDE_EVENT or event.type == OUT_OF_BOUNDS_EVENT:
                     self.is_game_over = True
                     self.is_game_active = False
-
-                if event.type == OUT_OF_BOUNDS_EVENT:
-                    self.is_game_over = True
-                    self.is_game_active = False
+                    self.sounds.play_sound(sound_names.SoundNames.COLLIDE)
 
                 if event.type == BIRD_FLAP_EVENT:
                     self.player.change_bird_frame()
 
                 if event.type == PASSED_EVENT:
                     self.score.update_score()
+                    self.sounds.play_sound(sound_names.SoundNames.POINT)
 
             keys = pygame.key.get_pressed()
 
@@ -84,13 +83,24 @@ class SinglePlayer:
                 self.is_game_active = True
                 self.show_start = False
                 self.player.on_tap()
+                self.sounds.play_sound(sound_names.SoundNames.FLAP)
 
-            # restart the game
-            if keys[pygame.K_UP] and self.is_game_over:
+            mouse_position = pygame.mouse.get_pos()
+
+            if event.type == pygame.MOUSEMOTION:
+                if self.restart_button.is_mouse_over(mouse_position):
+                    self.restart_button.hover()
+                else:
+                    self.restart_button.unhover()
+                if self.back_to_home_button.is_mouse_over(mouse_position):
+                    self.back_to_home_button.hover()
+                else:
+                    self.back_to_home_button.unhover()
+
+            if event.type == pygame.MOUSEBUTTONDOWN and self.restart_button.is_mouse_over(mouse_position):
                 self.reset_game()
 
-            # go back to home page
-            if keys[pygame.K_LEFT] and not self.is_game_active:
+            if event.type == pygame.MOUSEBUTTONDOWN and self.back_to_home_button.is_mouse_over(mouse_position):
                 self.run = False
 
     def draw_objects(self):
@@ -110,6 +120,8 @@ class SinglePlayer:
         if self.is_game_over:
             self.game_over.draw_game_over(screen)
             self.score.draw_final_score(screen)
+            self.restart_button.draw_restart_button(screen)
+            self.back_to_home_button.draw_back_to_home_button(screen)
 
     def move_objects(self):
         if self.is_game_active:

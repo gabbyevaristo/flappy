@@ -7,7 +7,7 @@ class Score:
     def __init__(self):
         self.current_score = 0
         self.current_score_text = text_creator.TextCreator(size=85, text='0', color=constants.BLACK, position=(constants.SCREEN_WIDTH // 2, 150))
-        self.final_score_text = text_creator.TextCreator(size=50, text='', color=constants.BLACK, position=(constants.SCREEN_WIDTH // 2, 400))
+        self.final_score_text = text_creator.TextCreator(size=45, text='', color=constants.BLACK, position=(constants.SCREEN_WIDTH // 2, 600))
 
     def update_score(self):
         self.current_score += 1
@@ -16,6 +16,9 @@ class Score:
     def reset_score(self):
         self.current_score = 0
         self.current_score_text.update_text(str(self.current_score))
+
+    def get_score(self):
+        return self.current_score
 
     def draw_current_score(self, screen):
         screen.blit(self.current_score_text.get_text_surface(), self.current_score_text.get_text_rect())
