@@ -1,13 +1,18 @@
 import pygame
 from . import pipes
+from creation import image_loader
 import constants
 import random
 
+
+PIPE_FILE = 'pipe-green.png'
 
 
 class PipeManager:
 
     def __init__(self):
+        self.pipe = image_loader.ImageLoader.load_image(PIPE_FILE)
+        self.pipe = pygame.transform.scale(self.pipe, (self.pipe.get_width() + 20, self.pipe.get_height() * 2))
         self.pipes = []
         self.pipe_heights = [i for i in range(250,600,10)]
 
@@ -28,8 +33,8 @@ class PipeManager:
 
     def add_pipe(self):
         height = random.choice(self.pipe_heights)
-        bottom_pipe = pipes.BottomPipe(height)
-        top_pipe = pipes.TopPipe(height - constants.PIPE_GAP)
+        bottom_pipe = pipes.BottomPipe(self.pipe, height)
+        top_pipe = pipes.TopPipe(self.pipe, height - constants.PIPE_GAP)
         self.pipes.append((bottom_pipe, top_pipe))
 
     def clear_pipes(self):

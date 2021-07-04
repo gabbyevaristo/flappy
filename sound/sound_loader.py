@@ -3,7 +3,7 @@ from . import sound_names
 import os
 
 
-SOUND_DIR = '../sounds'
+SOUND_DIR = 'sounds'
 
 class SoundLoader:
 
