@@ -1,5 +1,5 @@
 import pygame
-import image_loader
+from creation import image_loader
 import constants
 
 

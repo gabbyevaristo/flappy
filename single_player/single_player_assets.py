@@ -1,6 +1,5 @@
 import pygame
-import image_loader
-import button_creator
+from creation import image_loader, button_creator
 import constants
 
 

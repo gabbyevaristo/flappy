@@ -1,12 +1,8 @@
 import pygame
 import constants
-import landscape
-import bird
-import pipe_manager
-import score
-import sound_loader
-import sound_names
-import single_player_assets
+from game_objects import landscape, bird, pipe_manager, score
+from sound import sound_loader, sound_names
+from . import single_player_assets
 import sys
 
 

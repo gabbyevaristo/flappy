@@ -1,10 +1,9 @@
 import pygame
-import text_creator
 import constants
 import os
 
 
-FONT_DIR = 'fonts'
+FONT_DIR = '../fonts'
 
 
 class ButtonCreator:

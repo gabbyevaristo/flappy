@@ -1,10 +1,9 @@
 import pygame
-import constants
-import game_assets
-import screen, landscape
-import single_player_mode
-import sys
+import constants, game_assets
+from game_objects import screen, landscape
+from single_player import single_player_mode
 from enum import Enum
+import sys
 
 
 pygame.init()

@@ -2,7 +2,7 @@ import pygame
 import os
 
 
-IMG_DIR = 'images'
+IMG_DIR = '../images'
 
 class ImageLoader:
 

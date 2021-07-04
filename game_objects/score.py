@@ -1,5 +1,5 @@
 import pygame
-import text_creator
+from creation import text_creator
 import constants
 
 

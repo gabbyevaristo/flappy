@@ -1,5 +1,5 @@
 import pygame
-import pipes
+from . import pipes
 import constants
 import random
 

@@ -1,6 +1,6 @@
 import pygame
 import constants
-import image_loader
+from creation import image_loader
 
 
 RED_DOWNFLAP_FILE = 'redbird-downflap.png'
