@@ -3,6 +3,21 @@ import constants
 from creation import button_creator, text_creator
 
 
+class WaitingForOpponentText:
+
+    def __init__(self, screen_width):
+        self.waiting_text = text_creator.TextCreator(
+            position=(screen_width // 2, 200), size=38,
+            text='Waiting for Opponent', color=constants.BLACK)
+
+
+    def draw_waiting_text(self, screen):
+        waiting_text_surface = self.waiting_text.get_text_surface()
+        waiting_text_rect = self.waiting_text.get_text_rect()
+        screen.blit(waiting_text_surface, waiting_text_rect)
+
+
+
 class WinnerText:
 
     def __init__(self, screen_width):

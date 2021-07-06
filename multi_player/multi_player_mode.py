@@ -31,6 +31,8 @@ class MultiPlayerMode:
         self.opponent = bird.Bird(
             initial_pos=(100,355), color=bird_color.BirdColor.BLUE)
         self.pipe_manager = pipe_manager.PipeManager()
+        self.waiting_text = multi_player_assets.WaitingForOpponentText(
+            constants.SCREEN_WIDTH)
         self.winner_text = multi_player_assets.WinnerText(constants.SCREEN_WIDTH)
         self.loser_text = multi_player_assets.LoserText(constants.SCREEN_WIDTH)
         self.rematch_button = multi_player_assets.RematchButton()
@@ -94,6 +96,9 @@ class MultiPlayerMode:
                 self.back_to_home_button.fill_back_to_home_button(mouse_position)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.rematch_button.is_mouse_over(mouse_position):
+                    # self.reset_game()
+                    pass
                 if self.back_to_home_button.is_mouse_over(mouse_position):
                     self.run = False
 
@@ -104,7 +109,11 @@ class MultiPlayerMode:
         self.landscape.draw_foreground(screen)
         self.pipe_manager.draw_pipes(screen)
         self.player.draw_bird(screen)
-        self.opponent.draw_bird(screen)
+
+        if self.are_both_connected:
+            self.opponent.draw_bird(screen)
+        else:
+            self.waiting_text.draw_waiting_text(screen)
 
         if not self.is_game_active:
             if self.player_id == self.winner:
@@ -116,17 +125,17 @@ class MultiPlayerMode:
 
 
     def move_objects(self):
-        if self.is_game_active:
-            self.landscape.move_foreground(self.game_speed)
-            self.pipe_manager.move_pipes(self.game_speed)
-            if self.are_both_connected:
+        if self.are_both_connected:
+            if self.is_game_active:
+                self.landscape.move_foreground(self.game_speed)
+                self.pipe_manager.move_pipes(self.game_speed)
                 self.player.move_bird(constants.GRAVITY)
-        else:
-            # The winner freezes while the loser falls to the ground
-            if self.player_id == self.winner:
-                self.opponent.fall(constants.FLOOR_HEIGHT, constants.FALL_RATE)
             else:
-                self.player.fall(constants.FLOOR_HEIGHT, constants.FALL_RATE)
+                # The winner freezes while the loser falls to the ground
+                if self.player_id == self.winner:
+                    self.opponent.fall(constants.FLOOR_HEIGHT, constants.FALL_RATE)
+                else:
+                    self.player.fall(constants.FLOOR_HEIGHT, constants.FALL_RATE)
 
 
     def send_position(self):
@@ -146,6 +155,7 @@ class MultiPlayerMode:
                 opponent_y = game.get_opponent_y(self.player_id)
                 self.opponent.update_bird_y(opponent_y)
             else:
+                self.network.send('rematch')
                 self.is_game_active = False
                 self.winner = game.get_winner()
 

@@ -15,6 +15,10 @@ class MultiPlayerManager:
         return self.players_connected == 2
 
 
+    def reset_game(self):
+        self.winner = None
+
+
     def set_player_y(self, player, y):
         self.y_positions[player] = y
 

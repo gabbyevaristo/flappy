@@ -65,8 +65,10 @@ class Server:
                     if not data:
                         break
                     else:
+                        if data == 'rematch':
+                            self.game.reset_game()
                         # Set winner
-                        if data == 'collide':
+                        elif data == 'collide':
                             self.game.set_winner(player_id)
                         # Set opponent's position
                         elif data != 'game':
