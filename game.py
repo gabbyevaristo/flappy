@@ -3,6 +3,7 @@ import game_assets
 import constants
 from game_objects import screen, landscape
 from single_player import single_player_mode
+from multi_player import multi_player_mode
 from game_modes import GameModes
 import sys
 
@@ -27,7 +28,7 @@ class Game:
         self.clock = None
 
 
-    def run_game(self):
+    def run(self):
         self.clock = pygame.time.Clock()
 
         run = True
@@ -66,7 +67,9 @@ class Game:
                 self.screen, self.clock, self.landscape)
             self.clear_mode()
         elif self.mode == GameModes.MULTI:
-            pass
+            multi_player_mode.MultiPlayerMode(
+                self.screen, self.clock, self.landscape)
+            self.clear_mode()
 
 
     def draw_objects(self):

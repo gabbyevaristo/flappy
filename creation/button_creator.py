@@ -33,7 +33,7 @@ class ButtonCreator:
 
     def is_mouse_over(self, position):
         x, y = position
-        if (self.x < x < self.x + self.width and
-            self.y < y < self.y + self.height):
+        if (self.x < x < self.x + self.width
+                and self.y < y < self.y + self.height):
             return True
         return False

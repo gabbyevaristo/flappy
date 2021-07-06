@@ -24,7 +24,8 @@ class SinglePlayerMode:
         self.screen = screen
         self.clock = clock
         self.landscape = landscape
-        self.player = bird.Bird(color=bird_color.BirdColor.RED)
+        self.player = bird.Bird(
+            initial_pos=(180,355), color=bird_color.BirdColor.RED)
         self.pipe_manager = pipe_manager.PipeManager()
         self.start = single_player_assets.StartText(constants.SCREEN_WIDTH)
         self.game_over = single_player_assets.GameOverText(constants.SCREEN_WIDTH)
@@ -64,8 +65,8 @@ class SinglePlayerMode:
                     self.pipe_manager.add_pipe(
                         constants.SCREEN_WIDTH, constants.PIPE_GAP)
 
-                if (event.type == COLLIDE_EVENT or
-                    event.type == OUT_OF_BOUNDS_EVENT):
+                if (event.type == COLLIDE_EVENT
+                        or event.type == OUT_OF_BOUNDS_EVENT):
                     self.is_game_over = True
                     self.is_game_active = False
                     self.sounds.play_sound(sound_names.SoundNames.COLLIDE)
@@ -150,8 +151,8 @@ class SinglePlayerMode:
 
             # Only need to check one pipe since top and bottom pipes have
             # the same right position
-            if (pipe_rect.right <= bird_rect.left and
-                    not bottom_pipe.is_pipe_passed()):
+            if (pipe_rect.right <= bird_rect.left
+                    and not bottom_pipe.is_pipe_passed()):
                 bottom_pipe.set_passed_true()
                 top_pipe.set_passed_true()
                 pygame.event.post(pygame.event.Event(PASSED_EVENT))
@@ -160,7 +161,6 @@ class SinglePlayerMode:
     def reset_game(self):
         self.show_start = True
         self.is_game_over = False
-        self.run = True
         self.pipe_manager.clear_pipes()
         self.player.reset_bird()
         self.score.reset_score()

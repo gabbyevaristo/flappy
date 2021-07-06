@@ -13,7 +13,7 @@ BLUE_UPFLAP_FILE = 'bluebird-upflap.png'
 
 class Bird:
 
-    def __init__(self, color):
+    def __init__(self, initial_pos, color):
         if color == bird_color.BirdColor.RED:
             self.downflap = image_loader.ImageLoader.load_image(RED_DOWNFLAP_FILE)
             self.midflap = image_loader.ImageLoader.load_image(RED_MIDFLAP_FILE)
@@ -33,9 +33,9 @@ class Bird:
             (self.upflap.get_width() + 10, self.upflap.get_height() + 5))
         self.bird_frames = [self.downflap, self.midflap, self.upflap]
         self.bird_index = 0
-        self.initial_pos = (180,355)
+        self.initial_pos = initial_pos
         self.bird = self.bird_frames[self.bird_index]
-        self.bird_rect = self.bird.get_rect(center=self.initial_pos)
+        self.bird_rect = self.bird.get_rect(center=initial_pos)
         self.y = 0
 
 
@@ -83,5 +83,14 @@ class Bird:
         self.y = 0
 
 
+    def update_bird_y(self, y):
+        x = self.bird_rect.center[0]
+        self.bird_rect.center = (x, y)
+
+
     def get_bird_rect(self):
         return self.bird_rect
+
+
+    def get_bird_y(self):
+        return self.bird_rect.center[1]
