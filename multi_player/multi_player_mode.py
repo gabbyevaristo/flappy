@@ -142,22 +142,22 @@ class MultiPlayerMode:
         try:
             game = self.network.send('game')
         except:
-            self.run = False
+            self.are_both_connected = False
             print('Could not get game')
+        else:
+            if game.are_both_connected():
+                self.are_both_connected = True
 
-        if game.are_both_connected():
-            self.are_both_connected = True
-
-            # If there is no winner yet, grab the opponent's move
-            if not game.get_winner():
-                player_y = self.player.get_bird_y()
-                self.network.send(str(player_y))
-                opponent_y = game.get_opponent_y(self.player_id)
-                self.opponent.update_bird_y(opponent_y)
-            else:
-                self.network.send('rematch')
-                self.is_game_active = False
-                self.winner = game.get_winner()
+                # If there is no winner yet, grab the opponent's move
+                if not game.get_winner():
+                    player_y = self.player.get_bird_y()
+                    self.network.send(str(player_y))
+                    opponent_y = game.get_opponent_y(self.player_id)
+                    self.opponent.update_bird_y(opponent_y)
+                else:
+                    self.network.send('rematch')
+                    self.is_game_active = False
+                    self.winner = game.get_winner()
 
 
     def check_collision(self):

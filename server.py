@@ -83,6 +83,7 @@ class Server:
                 break
 
         print('[CONNECTION LOST] Connection closed')
-        self.game = None
         self.connections -= 1
+        if self.connections == 0:
+            game = None
         conn.close()
