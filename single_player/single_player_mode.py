@@ -1,6 +1,7 @@
 import pygame
 from . import single_player_assets
 import constants
+import game_modes
 from game_objects import bird, bird_color, pipe_manager, score
 from sound import sound_loader, sound_names
 import sys
@@ -26,7 +27,7 @@ class SinglePlayerMode:
         self.landscape = landscape
         self.player = bird.Bird(
             initial_pos=(180,355), color=bird_color.BirdColor.RED)
-        self.pipe_manager = pipe_manager.PipeManager()
+        self.pipe_manager = pipe_manager.PipeManager(game_modes.GameModes.SINGLE)
         self.start = single_player_assets.StartText(constants.SCREEN_WIDTH)
         self.game_over = single_player_assets.GameOverText(constants.SCREEN_WIDTH)
         self.restart_button = single_player_assets.RestartButton()

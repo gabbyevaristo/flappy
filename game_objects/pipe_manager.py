@@ -1,6 +1,7 @@
 import pygame
 from . import pipes
 from creation import image_loader
+import game_modes
 import random
 
 
@@ -10,12 +11,15 @@ RED_PIPE_FILE = 'pipe-red.png'
 
 class PipeManager:
 
-    def __init__(self):
+    def __init__(self, mode):
+        self.mode = mode
         self.pipe = image_loader.ImageLoader.load_image(GREEN_PIPE_FILE)
         self.pipe = pygame.transform.scale(
             self.pipe, (self.pipe.get_width() + 20, self.pipe.get_height() * 2))
         self.pipes = []
-        self.pipe_heights = [i for i in range(250,600,10)]
+        self.pipe_heights_single = [i for i in range(250,600,10)]
+        self.pipe_heights_multi = [400,410,240,350,550,270,300,340,390,570,450]
+        self.height_index = 0
 
 
     def draw_pipes(self, screen):
@@ -32,7 +36,15 @@ class PipeManager:
 
 
     def add_pipe(self, screen_width, pipe_gap):
-        height = random.choice(self.pipe_heights)
+        if self.mode == game_modes.GameModes.SINGLE:
+            height = random.choice(self.pipe_heights_single)
+        else:
+            if self.height_index < len(self.pipe_heights_multi) - 1:
+                self.height_index += 1
+            else:
+                self.height_index = 0
+            height = self.pipe_heights_multi[self.height_index]
+
         bottom_pipe = pipes.BottomPipe(
             pipe=self.pipe, screen_width=screen_width, height=height)
         top_pipe = pipes.TopPipe(
@@ -41,6 +53,7 @@ class PipeManager:
 
 
     def clear_pipes(self):
+        self.height_index = 0
         self.pipes.clear()
 
 

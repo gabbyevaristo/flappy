@@ -7,7 +7,7 @@ class WaitingForOpponentText:
 
     def __init__(self, screen_width):
         self.waiting_text = text_creator.TextCreator(
-            position=(screen_width // 2, 200), size=38,
+            position=(screen_width // 2, 400), size=38,
             text='Waiting for Opponent', color=constants.BLACK)
 
 

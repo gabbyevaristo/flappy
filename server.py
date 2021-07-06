@@ -2,6 +2,7 @@ import socket
 from threading import Thread
 import pickle
 import multi_player_manager
+import constants
 
 
 class Server:
@@ -9,7 +10,7 @@ class Server:
     def __init__(self):
         self.server = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
         self.host = socket.gethostbyname(socket.gethostname())
-        self.port = 5555
+        self.port = constants.PORT_NUMBER
         self.address = (self.host, self.port)
         self.game = None
         self.connections = 0
@@ -46,11 +47,12 @@ class Server:
                 player_id = 1
             self.game.increase_connection()
 
-            thread = Thread(target=self.threaded_client, args=(conn, player_id))
+            thread = Thread(
+                target=self.threaded_client, args=(conn, addr, player_id))
             thread.start()
 
 
-    def threaded_client(self, conn, player_id):
+    def threaded_client(self, conn, addr, player_id):
         # Send client what player they are on initial connection
         conn.send(str.encode(str(player_id)))
 
@@ -63,10 +65,13 @@ class Server:
                 # If the game is still going
                 if self.game:
                     if not data:
+                        print(f'No data {addr}')
                         break
                     else:
-                        if data == 'rematch':
-                            self.game.reset_game()
+                        if data == 'gameover':
+                            self.game.game_over()
+                        elif data == 'rematch':
+                            self.game.set_rematch(player_id)
                         # Set winner
                         elif data == 'collide':
                             self.game.set_winner(player_id)
@@ -78,11 +83,12 @@ class Server:
                         reply = self.game
                         conn.sendall(pickle.dumps(reply))
                 else:
+                    print(f'No game {addr}')
                     break
             except:
                 break
 
-        print('[CONNECTION LOST] Connection closed')
+        print(f'[CONNECTION LOST] Connection closed {addr}')
         self.connections -= 1
         self.game = None
         conn.close()

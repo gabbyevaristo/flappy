@@ -3,7 +3,8 @@ class MultiPlayerManager:
     def __init__(self):
         self.players_connected = 0
         # These initial values are overwritten by the player's actual y values
-        self.y_positions = {0: 355, 1: 355}
+        self.y_positions = {0: 0, 1: 0}
+        self.rematch = {0: True, 1: True}
         self.winner = None
 
 
@@ -15,8 +16,20 @@ class MultiPlayerManager:
         return self.players_connected == 2
 
 
-    def reset_game(self):
+    def game_over(self):
         self.winner = None
+        self.rematch[0] = False
+        self.rematch[1] = False
+
+
+    def set_rematch(self, player):
+        self.rematch[player] = True
+
+
+    def get_rematch(self):
+        if self.rematch[0] and self.rematch[1]:
+            return True
+        return False
 
 
     def set_player_y(self, player, y):

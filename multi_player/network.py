@@ -1,5 +1,6 @@
 import socket
 import pickle
+import constants
 
 
 class Network:
@@ -7,7 +8,7 @@ class Network:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host= socket.gethostbyname(socket.gethostname())
-        self.port = 5555
+        self.port = constants.PORT_NUMBER
         self.address = (self.host, self.port)
         self.player_id = self.connect()
 
