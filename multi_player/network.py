@@ -27,7 +27,10 @@ class Network:
         ''' Send data to the server and receive game manager object'''
         try:
             self.client.send(str.encode(data))
-            return pickle.loads(self.client.recv(2048 * 2))
+            response = self.client.recv(2048 * 2)
+            if response:
+                return pickle.loads(response)
+            return response
         except socket.error as e:
             print(e)
 

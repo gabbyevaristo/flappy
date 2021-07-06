@@ -42,7 +42,7 @@ class MultiPlayerMode:
         self.game_speed = constants.GAME_SPEED
         self.is_game_active = True
         self.are_both_connected = False
-        self.rematch = True
+        self.rematch = False
         self.run = True
         self.winner = None
         self.run_game()
@@ -150,23 +150,26 @@ class MultiPlayerMode:
             self.run = False
             print('Could not get game')
         else:
-            if game.are_both_connected():
-                self.are_both_connected = True
+            if game:
+                if game.are_both_connected():
+                    self.are_both_connected = True
 
-                # if game.get_rematch():
-                #     self.rematch = True
+                    # if game.get_rematch():
+                    #     self.rematch = True
 
-                # If there is no winner yet, grab the opponent's move
-                if not game.get_winner():
-                    player_y = self.player.get_bird_y()
-                    self.network.send(str(player_y))
-                    opponent_y = game.get_opponent_y(self.player_id)
-                    self.opponent.update_bird_y(opponent_y)
-                else:
-                    # self.network.send('gameover')
-                    self.is_game_active = False
-                    # self.rematch = False
-                    self.winner = game.get_winner()
+                    # If there is no winner yet, grab the opponent's move
+                    if not game.get_winner():
+                        player_y = self.player.get_bird_y()
+                        self.network.send(str(player_y))
+                        opponent_y = game.get_opponent_y(self.player_id)
+                        self.opponent.update_bird_y(opponent_y)
+                    else:
+                        # self.network.send('gameover')
+                        self.is_game_active = False
+                        # self.rematch = False
+                        self.winner = game.get_winner()
+            else:
+                self.run = False
 
 
     def check_collision(self):
