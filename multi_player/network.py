@@ -23,19 +23,13 @@ class Network:
 
 
     def send(self, data):
-        ''' Send data to the server '''
+        ''' Send data to the server and receive game manager object'''
         try:
             self.client.send(str.encode(data))
-
-            # If game, then deserialize the Manager object, else
-            # decode the opponent's position
-            if data == 'game':
-                return pickle.loads(self.client.recv(2048 * 2))
-            else:
-                return self.client.recv(2048 * 2).decode()
+            return pickle.loads(self.client.recv(2048 * 2))
         except socket.error as e:
             print(e)
 
 
     def get_player_id(self):
-        return self.player_id
+        return int(self.player_id)

@@ -27,54 +27,46 @@ class MultiPlayerMode:
         self.network = network.Network()
         self.player_id = self.network.get_player_id()
         self.player = bird.Bird(
-            initial_pos=(180,0), color=bird_color.BirdColor.RED)     # 355
+            initial_pos=(180,355), color=bird_color.BirdColor.RED)
         self.opponent = bird.Bird(
-            initial_pos=(100,0), color=bird_color.BirdColor.BLUE)
+            initial_pos=(100,355), color=bird_color.BirdColor.BLUE)
         self.pipe_manager = pipe_manager.PipeManager()
+        self.winner_text = multi_player_assets.WinnerText(constants.SCREEN_WIDTH)
+        self.loser_text = multi_player_assets.LoserText(constants.SCREEN_WIDTH)
+        self.rematch_button = multi_player_assets.RematchButton()
         self.back_to_home_button = multi_player_assets.BackToHomeButton()
         self.sounds = sound_loader.SoundLoader()
         self.game_speed = constants.GAME_SPEED
         self.is_game_active = True
+        self.are_both_connected = False
         self.run = True
+        self.winner = None
         self.run_game()
 
 
     def run_game(self):
-        player_id = int(self.player_id) + 1
+        player_id = self.player_id + 1
         print(f'You are player {player_id}')
 
         while self.run:
-
-            # # ask server to send us the game
-            # try:
-            #     game = self.network.send('game')
-            # # Someone disconnected
-            # except:
-            #     self.run = False
-
-            game = self.network.send('game')
-            if game.are_both_connected():
-                player_y = self.player.get_bird_y()
-                opponent_y = int(self.network.send(str(player_y)))
-                self.opponent.update_bird_y(opponent_y)
-
+            self.send_position()
             self.check_collision()
             self.check_out_of_bounds()
-            self.check_events(game)
-            self.move_objects(game)
+            self.check_events()
+            self.move_objects()
             self.draw_objects()
             self.screen.update_screen()
 
             self.clock.tick(constants.FPS)
 
 
-    def check_events(self, game):
+    def check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-            if self.is_game_active and game.are_both_connected():
+            if self.is_game_active and self.are_both_connected:
                 if event.type == SPAWN_PIPE_EVENT:
                     self.pipe_manager.add_pipe(
                         constants.SCREEN_WIDTH, constants.PIPE_GAP)
@@ -82,21 +74,23 @@ class MultiPlayerMode:
                 if (event.type == COLLIDE_EVENT
                         or event.type == OUT_OF_BOUNDS_EVENT):
                     self.is_game_active = False
+                    self.network.send('collide')
                     self.sounds.play_sound(sound_names.SoundNames.COLLIDE)
 
                 if event.type == BIRD_FLAP_EVENT:
                     self.player.change_bird_frame()
 
-            keys = pygame.key.get_pressed()
+                keys = pygame.key.get_pressed()
 
-            if keys[pygame.K_SPACE] and self.is_game_active and game.are_both_connected():
-                self.player.on_tap(constants.JUMP_VELOCITY)
-                self.sounds.play_sound(sound_names.SoundNames.FLAP)
+                if keys[pygame.K_SPACE]:
+                    self.player.on_tap(constants.JUMP_VELOCITY)
+                    self.sounds.play_sound(sound_names.SoundNames.FLAP)
 
             mouse_position = pygame.mouse.get_pos()
 
             # Fill button with specified color when button is hovered
             if event.type == pygame.MOUSEMOTION:
+                self.rematch_button.fill_rematch_button(mouse_position)
                 self.back_to_home_button.fill_back_to_home_button(mouse_position)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -113,17 +107,47 @@ class MultiPlayerMode:
         self.opponent.draw_bird(screen)
 
         if not self.is_game_active:
+            if self.player_id == self.winner:
+                self.winner_text.draw_winner_text(screen)
+            else:
+                self.loser_text.draw_loser_text(screen)
+            self.rematch_button.draw_rematch_button(screen)
             self.back_to_home_button.draw_back_to_home_button(screen)
 
 
-    def move_objects(self, game):
+    def move_objects(self):
         if self.is_game_active:
             self.landscape.move_foreground(self.game_speed)
             self.pipe_manager.move_pipes(self.game_speed)
-            if game.are_both_connected():
+            if self.are_both_connected:
                 self.player.move_bird(constants.GRAVITY)
         else:
-            self.player.fall(constants.FLOOR_HEIGHT, constants.FALL_RATE)
+            # The winner freezes while the loser falls to the ground
+            if self.player_id == self.winner:
+                self.opponent.fall(constants.FLOOR_HEIGHT, constants.FALL_RATE)
+            else:
+                self.player.fall(constants.FLOOR_HEIGHT, constants.FALL_RATE)
+
+
+    def send_position(self):
+        try:
+            game = self.network.send('game')
+        except:
+            self.run = False
+            print('Could not get game')
+
+        if game.are_both_connected():
+            self.are_both_connected = True
+
+            # If there is no winner yet, grab the opponent's move
+            if not game.get_winner():
+                player_y = self.player.get_bird_y()
+                self.network.send(str(player_y))
+                opponent_y = game.get_opponent_y(self.player_id)
+                self.opponent.update_bird_y(opponent_y)
+            else:
+                self.is_game_active = False
+                self.winner = game.get_winner()
 
 
     def check_collision(self):

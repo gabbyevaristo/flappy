@@ -65,18 +65,16 @@ class Server:
                     if not data:
                         break
                     else:
-                        # Send game manager
-                        if data == 'game':
-                            reply = self.game
-                            conn.sendall(pickle.dumps(reply))
-                        # Send opponent's position
-                        else:
+                        # Set winner
+                        if data == 'collide':
+                            self.game.set_winner(player_id)
+                        # Set opponent's position
+                        elif data != 'game':
                             self.game.set_player_y(player_id, int(data))
-                            if player_id == 0:
-                                reply = self.game.get_player_y(1)
-                            else:
-                                reply = self.game.get_player_y(0)
-                            conn.sendall(str.encode(str(reply)))
+
+                        # Always send game manager
+                        reply = self.game
+                        conn.sendall(pickle.dumps(reply))
                 else:
                     break
             except:
