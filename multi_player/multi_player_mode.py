@@ -142,7 +142,7 @@ class MultiPlayerMode:
         try:
             game = self.network.send('game')
         except:
-            self.are_both_connected = False
+            self.run = False
             print('Could not get game')
         else:
             if game.are_both_connected():
@@ -155,7 +155,6 @@ class MultiPlayerMode:
                     opponent_y = game.get_opponent_y(self.player_id)
                     self.opponent.update_bird_y(opponent_y)
                 else:
-                    self.network.send('rematch')
                     self.is_game_active = False
                     self.winner = game.get_winner()
 
