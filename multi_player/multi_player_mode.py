@@ -15,15 +15,14 @@ COLLIDE_EVENT = pygame.USEREVENT + 1
 OUT_OF_BOUNDS_EVENT = pygame.USEREVENT + 2
 BIRD_FLAP_EVENT = pygame.USEREVENT + 3
 
-pygame.time.set_timer(SPAWN_PIPE_EVENT, 1500)
 pygame.time.set_timer(BIRD_FLAP_EVENT, 150)
 
 
 class MultiPlayerMode:
 
-    def __init__(self, screen, clock, landscape):
+    def __init__(self, screen, landscape):
         self.screen = screen
-        self.clock = clock
+        self.clock = None
         self.landscape = landscape
         self.network = network.Network()
         self.player_id = self.network.get_player_id()
@@ -36,13 +35,13 @@ class MultiPlayerMode:
             constants.SCREEN_WIDTH)
         self.winner_text = multi_player_assets.WinnerText(constants.SCREEN_WIDTH)
         self.loser_text = multi_player_assets.LoserText(constants.SCREEN_WIDTH)
-        self.rematch_button = multi_player_assets.RematchButton()
         self.back_to_home_button = multi_player_assets.BackToHomeButton()
         self.sounds = sound_loader.SoundLoader()
         self.game_speed = constants.GAME_SPEED
-        self.is_game_active = True
+        self.show_start = True
+        self.is_game_active = False
         self.are_both_connected = False
-        self.rematch = True
+        self.spawn_event = False
         self.run = True
         self.winner = None
         self.run_game()
@@ -52,6 +51,7 @@ class MultiPlayerMode:
         player_id = self.player_id + 1
         print(f'You are player {player_id}')
 
+        self.clock = pygame.time.Clock()
         while self.run:
             self.send_position()
             self.check_collision()
@@ -70,7 +70,6 @@ class MultiPlayerMode:
                 pygame.quit()
                 sys.exit()
 
-            # if self.is_game_active and self.are_both_connected and self.rematch:
             if self.is_game_active and self.are_both_connected:
                 if event.type == SPAWN_PIPE_EVENT:
                     self.pipe_manager.add_pipe(
@@ -95,13 +94,9 @@ class MultiPlayerMode:
 
             # Fill button with specified color when button is hovered
             if event.type == pygame.MOUSEMOTION:
-                self.rematch_button.fill_rematch_button(mouse_position)
                 self.back_to_home_button.fill_back_to_home_button(mouse_position)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.rematch_button.is_mouse_over(mouse_position):
-                    self.network.send('rematch')
-                    self.reset_game()
                 if self.back_to_home_button.is_mouse_over(mouse_position):
                     self.run = False
 
@@ -113,23 +108,20 @@ class MultiPlayerMode:
         self.pipe_manager.draw_pipes(screen)
         self.player.draw_bird(screen)
 
-        # if (self.are_both_connected and self.rematch) or not self.is_game_active:
         if self.are_both_connected:
             self.opponent.draw_bird(screen)
         else:
             self.waiting_text.draw_waiting_text(screen)
 
-        if not self.is_game_active:
+        if not self.show_start and not self.is_game_active:
             if self.player_id == self.winner:
                 self.winner_text.draw_winner_text(screen)
             else:
                 self.loser_text.draw_loser_text(screen)
-            self.rematch_button.draw_rematch_button(screen)
             self.back_to_home_button.draw_back_to_home_button(screen)
 
 
     def move_objects(self):
-        # if self.are_both_connected and self.rematch:
         if self.are_both_connected:
             if self.is_game_active:
                 self.landscape.move_foreground(self.game_speed)
@@ -150,23 +142,27 @@ class MultiPlayerMode:
             self.run = False
             print('Could not get game')
         else:
-            if game.are_both_connected():
-                self.are_both_connected = True
+            if game:
+                if game.are_both_connected():
+                    self.are_both_connected = True
+                    self.is_game_active = True
 
-                # if game.get_rematch():
-                #     self.rematch = True
+                    if not self.spawn_event:
+                        self.spawn_event = True
+                        pygame.time.set_timer(SPAWN_PIPE_EVENT, 1500)
 
-                # If there is no winner yet, grab the opponent's move
-                if not game.get_winner():
-                    player_y = self.player.get_bird_y()
-                    self.network.send(str(player_y))
-                    opponent_y = game.get_opponent_y(self.player_id)
-                    self.opponent.update_bird_y(opponent_y)
-                else:
-                    # self.network.send('gameover')
-                    self.is_game_active = False
-                    # self.rematch = False
-                    self.winner = game.get_winner()
+                    # If there is no winner yet, grab the opponent's move
+                    if game.get_winner() == None:
+                        self.show_start = False
+                        player_y = self.player.get_bird_y()
+                        self.network.send(str(player_y))
+                        opponent_y = game.get_opponent_y(self.player_id)
+                        self.opponent.update_bird_y(opponent_y)
+                    else:
+                        self.is_game_active = False
+                        self.winner = game.get_winner()
+            else:
+                self.run = False
 
 
     def check_collision(self):

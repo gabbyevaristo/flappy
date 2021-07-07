@@ -21,9 +21,9 @@ pygame.time.set_timer(BIRD_FLAP_EVENT, 150)
 
 class SinglePlayerMode:
 
-    def __init__(self, screen, clock, landscape):
+    def __init__(self, screen, landscape):
         self.screen = screen
-        self.clock = clock
+        self.clock = None
         self.landscape = landscape
         self.player = bird.Bird(
             initial_pos=(180,355), color=bird_color.BirdColor.RED)
@@ -43,6 +43,8 @@ class SinglePlayerMode:
 
 
     def run_game(self):
+        self.clock = pygame.time.Clock()
+
         while self.run:
             self.check_collision()
             self.check_out_of_bounds()

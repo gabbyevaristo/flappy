@@ -2,15 +2,14 @@ import socket
 from threading import Thread
 import pickle
 import multi_player_manager
-import constants
 
 
 class Server:
 
     def __init__(self):
         self.server = socket.socket(family=socket.AF_INET, type=socket.SOCK_STREAM)
-        self.host = socket.gethostbyname(socket.gethostname())
-        self.port = constants.PORT_NUMBER
+        self.host = ''
+        self.port = 5555
         self.address = (self.host, self.port)
         self.game = None
         self.connections = 0
@@ -68,12 +67,8 @@ class Server:
                         print(f'No data {addr}')
                         break
                     else:
-                        if data == 'gameover':
-                            self.game.game_over()
-                        elif data == 'rematch':
-                            self.game.set_rematch(player_id)
                         # Set winner
-                        elif data == 'collide':
+                        if data == 'collide':
                             self.game.set_winner(player_id)
                         # Set opponent's position
                         elif data != 'game':

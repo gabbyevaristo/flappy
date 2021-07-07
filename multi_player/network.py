@@ -1,14 +1,13 @@
 import socket
 import pickle
-import constants
 
 
 class Network:
 
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.host= socket.gethostbyname(socket.gethostname())
-        self.port = constants.PORT_NUMBER
+        self.host = '173.255.220.73'
+        self.port = 5555
         self.address = (self.host, self.port)
         self.player_id = self.connect()
 
@@ -27,7 +26,10 @@ class Network:
         ''' Send data to the server and receive game manager object'''
         try:
             self.client.send(str.encode(data))
-            return pickle.loads(self.client.recv(2048 * 2))
+            response = self.client.recv(2048 * 2)
+            if response:
+                return pickle.loads(response)
+            return response
         except socket.error as e:
             print(e)
 

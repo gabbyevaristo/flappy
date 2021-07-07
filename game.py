@@ -64,11 +64,11 @@ class Game:
         # Instantiate single or multi player mode
         if self.mode == GameModes.SINGLE:
             single_player_mode.SinglePlayerMode(
-                self.screen, self.clock, self.landscape)
+                self.screen, self.landscape)
             self.clear_mode()
         elif self.mode == GameModes.MULTI:
             multi_player_mode.MultiPlayerMode(
-                self.screen, self.clock, self.landscape)
+                self.screen, self.landscape)
             self.clear_mode()
 
 
