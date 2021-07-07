@@ -15,15 +15,15 @@ COLLIDE_EVENT = pygame.USEREVENT + 1
 OUT_OF_BOUNDS_EVENT = pygame.USEREVENT + 2
 BIRD_FLAP_EVENT = pygame.USEREVENT + 3
 
-pygame.time.set_timer(SPAWN_PIPE_EVENT, 1500)
+# pygame.time.set_timer(SPAWN_PIPE_EVENT, 1500)
 pygame.time.set_timer(BIRD_FLAP_EVENT, 150)
 
 
 class MultiPlayerMode:
 
-    def __init__(self, screen, clock, landscape):
+    def __init__(self, screen, landscape):
         self.screen = screen
-        self.clock = clock
+        self.clock = None
         self.landscape = landscape
         self.network = network.Network()
         self.player_id = self.network.get_player_id()
@@ -40,9 +40,11 @@ class MultiPlayerMode:
         self.back_to_home_button = multi_player_assets.BackToHomeButton()
         self.sounds = sound_loader.SoundLoader()
         self.game_speed = constants.GAME_SPEED
-        self.is_game_active = True
+        self.show_start = True
+        self.is_game_active = False
         self.are_both_connected = False
-        self.rematch = False
+        self.spawn_event = False
+        # self.rematch = False
         self.run = True
         self.winner = None
         self.run_game()
@@ -52,6 +54,7 @@ class MultiPlayerMode:
         player_id = self.player_id + 1
         print(f'You are player {player_id}')
 
+        self.clock = pygame.time.Clock()
         while self.run:
             self.send_position()
             self.check_collision()
@@ -119,7 +122,7 @@ class MultiPlayerMode:
         else:
             self.waiting_text.draw_waiting_text(screen)
 
-        if not self.is_game_active:
+        if not self.show_start and not self.is_game_active:
             if self.player_id == self.winner:
                 self.winner_text.draw_winner_text(screen)
             else:
@@ -153,12 +156,17 @@ class MultiPlayerMode:
             if game:
                 if game.are_both_connected():
                     self.are_both_connected = True
+                    self.is_game_active = True
+                    if not self.spawn_event:
+                        self.spawn_event = True
+                        pygame.time.set_timer(SPAWN_PIPE_EVENT, 1500)
 
                     # if game.get_rematch():
                     #     self.rematch = True
 
                     # If there is no winner yet, grab the opponent's move
                     if game.get_winner() == None:
+                        self.show_start = False
                         player_y = self.player.get_bird_y()
                         self.network.send(str(player_y))
                         opponent_y = game.get_opponent_y(self.player_id)
