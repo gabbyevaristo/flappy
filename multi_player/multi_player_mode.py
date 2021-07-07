@@ -158,7 +158,7 @@ class MultiPlayerMode:
                     #     self.rematch = True
 
                     # If there is no winner yet, grab the opponent's move
-                    if not game.get_winner():
+                    if game.get_winner() == None:
                         player_y = self.player.get_bird_y()
                         self.network.send(str(player_y))
                         opponent_y = game.get_opponent_y(self.player_id)
