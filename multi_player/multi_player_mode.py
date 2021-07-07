@@ -15,7 +15,6 @@ COLLIDE_EVENT = pygame.USEREVENT + 1
 OUT_OF_BOUNDS_EVENT = pygame.USEREVENT + 2
 BIRD_FLAP_EVENT = pygame.USEREVENT + 3
 
-# pygame.time.set_timer(SPAWN_PIPE_EVENT, 1500)
 pygame.time.set_timer(BIRD_FLAP_EVENT, 150)
 
 
