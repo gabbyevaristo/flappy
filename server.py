@@ -68,12 +68,8 @@ class Server:
                         print(f'No data {addr}')
                         break
                     else:
-                        if data == 'gameover':
-                            self.game.game_over()
-                        elif data == 'rematch':
-                            self.game.set_rematch(player_id)
                         # Set winner
-                        elif data == 'collide':
+                        if data == 'collide':
                             self.game.set_winner(player_id)
                         # Set opponent's position
                         elif data != 'game':

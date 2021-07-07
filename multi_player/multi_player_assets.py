@@ -48,35 +48,11 @@ class LoserText:
 
 
 
-class RematchButton:
-
-    def __init__(self):
-        self.rematch_button = button_creator.ButtonCreator(
-            x=88, y=410, width=330, height=50, size=37, text='Rematch',
-            color_text=constants.BLACK, color_fill=constants.YELLOW)
-
-
-    def draw_rematch_button(self, screen):
-        self.rematch_button.draw(screen)
-
-
-    def is_mouse_over(self, position):
-        return self.rematch_button.is_mouse_over(position)
-
-
-    def fill_rematch_button(self, position):
-        if self.is_mouse_over(position):
-            self.rematch_button.change_color_fill(constants.GREEN)
-        else:
-            self.rematch_button.change_color_fill(constants.YELLOW)
-
-
-
 class BackToHomeButton:
 
     def __init__(self):
         self.back_to_home_button = button_creator.ButtonCreator(
-            x=88, y=480, width=330, height=50, size=37, text='Back to Home',
+            x=88, y=470, width=330, height=50, size=37, text='Back to Home',
             color_text=constants.BLACK, color_fill=constants.YELLOW)
 
 

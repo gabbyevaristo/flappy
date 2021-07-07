@@ -35,7 +35,6 @@ class MultiPlayerMode:
             constants.SCREEN_WIDTH)
         self.winner_text = multi_player_assets.WinnerText(constants.SCREEN_WIDTH)
         self.loser_text = multi_player_assets.LoserText(constants.SCREEN_WIDTH)
-        self.rematch_button = multi_player_assets.RematchButton()
         self.back_to_home_button = multi_player_assets.BackToHomeButton()
         self.sounds = sound_loader.SoundLoader()
         self.game_speed = constants.GAME_SPEED
@@ -43,7 +42,6 @@ class MultiPlayerMode:
         self.is_game_active = False
         self.are_both_connected = False
         self.spawn_event = False
-        # self.rematch = False
         self.run = True
         self.winner = None
         self.run_game()
@@ -72,7 +70,6 @@ class MultiPlayerMode:
                 pygame.quit()
                 sys.exit()
 
-            # if self.is_game_active and self.are_both_connected and self.rematch:
             if self.is_game_active and self.are_both_connected:
                 if event.type == SPAWN_PIPE_EVENT:
                     self.pipe_manager.add_pipe(
@@ -97,13 +94,9 @@ class MultiPlayerMode:
 
             # Fill button with specified color when button is hovered
             if event.type == pygame.MOUSEMOTION:
-                self.rematch_button.fill_rematch_button(mouse_position)
                 self.back_to_home_button.fill_back_to_home_button(mouse_position)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.rematch_button.is_mouse_over(mouse_position):
-                    self.network.send('rematch')
-                    self.reset_game()
                 if self.back_to_home_button.is_mouse_over(mouse_position):
                     self.run = False
 
@@ -115,7 +108,6 @@ class MultiPlayerMode:
         self.pipe_manager.draw_pipes(screen)
         self.player.draw_bird(screen)
 
-        # if (self.are_both_connected and self.rematch) or not self.is_game_active:
         if self.are_both_connected:
             self.opponent.draw_bird(screen)
         else:
@@ -126,12 +118,10 @@ class MultiPlayerMode:
                 self.winner_text.draw_winner_text(screen)
             else:
                 self.loser_text.draw_loser_text(screen)
-            self.rematch_button.draw_rematch_button(screen)
             self.back_to_home_button.draw_back_to_home_button(screen)
 
 
     def move_objects(self):
-        # if self.are_both_connected and self.rematch:
         if self.are_both_connected:
             if self.is_game_active:
                 self.landscape.move_foreground(self.game_speed)
@@ -156,12 +146,10 @@ class MultiPlayerMode:
                 if game.are_both_connected():
                     self.are_both_connected = True
                     self.is_game_active = True
+
                     if not self.spawn_event:
                         self.spawn_event = True
                         pygame.time.set_timer(SPAWN_PIPE_EVENT, 1500)
-
-                    # if game.get_rematch():
-                    #     self.rematch = True
 
                     # If there is no winner yet, grab the opponent's move
                     if game.get_winner() == None:
@@ -171,9 +159,7 @@ class MultiPlayerMode:
                         opponent_y = game.get_opponent_y(self.player_id)
                         self.opponent.update_bird_y(opponent_y)
                     else:
-                        # self.network.send('gameover')
                         self.is_game_active = False
-                        # self.rematch = False
                         self.winner = game.get_winner()
             else:
                 self.run = False
